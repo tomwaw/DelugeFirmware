@@ -95,7 +95,9 @@ Action* ActionLogger::getNewAction(ActionType newActionType, ActionAddition addT
 	// Exception for sound editor note row editor UI which can edit note rows on the grid
 	// Exception for loadPatternUI which does edit note rows on the grid
 	if ((getCurrentUI() != getRootUI())
-	    && (!(getCurrentUI() == &soundEditor && (soundEditor.inNoteEditor() || soundEditor.inNoteRowEditor())))
+	    && (!(getCurrentUI() == &soundEditor
+	          && (soundEditor.inNoteEditor() || soundEditor.inNoteRowEditor()
+	              || newActionType == ActionType::TB3PO_FREEZE)))
 	    && (getCurrentUI() != &loadPatternUI)) {
 		return nullptr;
 	}

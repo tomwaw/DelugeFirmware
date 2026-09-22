@@ -68,6 +68,14 @@ void Output::setupWithoutActiveClip(ModelStack* modelStack) {
 
 // Returns whether Clip changed from before
 bool Output::setActiveClip(ModelStackWithTimelineCounter* modelStack, PgmChangeSend maySendMIDIPGMs) {
+	// Generated voices belong to the outgoing clip, including arranger clone handovers.
+	if (activeClip && activeClip->type == ClipType::INSTRUMENT
+	    && (!modelStack || modelStack->getTimelineCounter() != activeClip)) {
+		char memory[MODEL_STACK_MAX_SIZE];
+		auto* oldStack =
+		    setupModelStackWithTimelineCounter(memory, modelStack ? modelStack->song : currentSong, activeClip);
+		static_cast<InstrumentClip*>(activeClip)->stopGenerator(oldStack);
+	}
 	if (!modelStack) {
 		activeClip = nullptr;
 		inValidState = false;
@@ -82,6 +90,11 @@ bool Output::setActiveClip(ModelStackWithTimelineCounter* modelStack, PgmChangeS
 }
 
 void Output::detachActiveClip(Song* song) {
+	if (activeClip && activeClip->type == ClipType::INSTRUMENT) {
+		char memory[MODEL_STACK_MAX_SIZE];
+		auto* modelStack = setupModelStackWithTimelineCounter(memory, song, activeClip);
+		static_cast<InstrumentClip*>(activeClip)->stopGenerator(modelStack);
+	}
 	activeClip = nullptr;
 	inValidState = false;
 

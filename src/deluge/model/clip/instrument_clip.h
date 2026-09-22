@@ -20,6 +20,7 @@
 #include "definitions_cxx.hpp"
 #include "gui/ui/keyboard/state_data.h"
 #include "gui/views/instrument_clip_view.h"
+#include "model/generator/tb3po_history.h"
 #include "model/note/note_row_vector.h"
 #include "modulation/arpeggiator.h"
 
@@ -101,6 +102,17 @@ public:
 	void copyBasicsFrom(Clip const* otherClip) override;
 
 	ArpeggiatorSettings arpSettings;
+
+	bool generatorEnabled = false;
+	deluge::model::generator::tb3po::Settings generatorSettings{0x303, 4, 16, true};
+	int32_t generatorOctave = 3;
+	bool generatorAvailable() const;
+	void setGeneratorEnabled(ModelStackWithTimelineCounter* modelStack, bool enabled);
+	void refreshGeneratorPattern(Song* song);
+	void stopGenerator(ModelStackWithTimelineCounter* modelStack);
+	bool generatorPending() const { return generatorRuntime_.pending(); }
+	bool generatorFreezeReady() const { return generatorHistory_.ready(); }
+	Error freezeGeneratorBar(Song* song);
 
 	ParamManagerForTimeline backedUpParamManagerMIDI;
 
@@ -243,6 +255,15 @@ protected:
 	void pingpongOccurred(ModelStackWithTimelineCounter* modelStack) override;
 
 private:
+	deluge::model::generator::tb3po::Runtime generatorRuntime_;
+	deluge::model::generator::tb3po::History generatorHistory_;
+	deluge::model::generator::tb3po::MusicalContext generatorContext_;
+	bool generatorPatternReady_ = false;
+	void sendGeneratorEvents(ModelStackWithTimelineCounter* modelStack,
+	                         const deluge::model::generator::tb3po::Events& events);
+	void processGenerator(ModelStackWithTimelineCounter* modelStack);
+	void setNoteRowPositions(ModelStackWithTimelineCounter* modelStack, int32_t newPos, uint32_t posForParamManagers);
+
 	InstrumentClip* instrumentWasLoadedByReferenceFromClip{};
 
 	void deleteEmptyNoteRowsAtEitherEnd(bool onlyIfNoDrum, ModelStackWithTimelineCounter* modelStack,

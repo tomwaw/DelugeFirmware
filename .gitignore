@@ -6,6 +6,7 @@
 /Deluge.jlink
 /JLinkLog.log
 /build*
+/sdcard/
 /e2-build*
 /dbt-build*
 *.launch

@@ -149,6 +149,10 @@ void InstrumentClip::copyBasicsFrom(Clip const* otherClip) {
 	}
 
 	arpSettings.cloneFrom(&otherInstrumentClip->arpSettings);
+	generatorEnabled = otherInstrumentClip->generatorEnabled;
+	generatorSettings = otherInstrumentClip->generatorSettings;
+	generatorOctave = otherInstrumentClip->generatorOctave;
+	generatorPatternReady_ = false;
 }
 
 // Will replace the Clip in the modelStack, if success.
@@ -378,6 +382,8 @@ void InstrumentClip::halveNoteRowsWithIndependentLength(ModelStackWithTimelineCo
 // Accepts any pos >= -length
 void InstrumentClip::setPos(ModelStackWithTimelineCounter* modelStack, int32_t newPos,
                             bool useActualPosForParamManagers) {
+	stopGenerator(modelStack);
+	generatorHistory_.reset();
 	Clip::setPos(modelStack, newPos, useActualPosForParamManagers); // This will also call our own virtual expectEvent()
 
 	noteRowsNumTicksBehindClip = 0;
@@ -388,7 +394,11 @@ void InstrumentClip::setPos(ModelStackWithTimelineCounter* modelStack, int32_t n
 	// of our own setPosForParamManagers().
 
 	uint32_t posForParamManagers = useActualPosForParamManagers ? getLivePos() : lastProcessedPos;
+	setNoteRowPositions(modelStack, newPos, posForParamManagers);
+}
 
+void InstrumentClip::setNoteRowPositions(ModelStackWithTimelineCounter* modelStack, int32_t newPos,
+                                         uint32_t posForParamManagers) {
 	for (int32_t i = 0; i < noteRows.getNumElements(); i++) {
 		NoteRow* thisNoteRow = noteRows.getElement(i);
 
@@ -693,11 +703,94 @@ void InstrumentClip::pingpongOccurred(ModelStackWithTimelineCounter* modelStack)
 	}
 }
 
+bool InstrumentClip::generatorAvailable() const {
+	return output && output->type == OutputType::SYNTH && arpSettings.mode == ArpMode::OFF
+	       && sequenceDirectionMode == SequenceDirection::FORWARD;
+}
+
+void InstrumentClip::sendGeneratorEvents(ModelStackWithTimelineCounter* modelStack,
+                                         const deluge::model::generator::tb3po::Events& events) {
+	if (events.count == 0 || !output || output->type != OutputType::SYNTH || !isActiveOnOutput()) {
+		return;
+	}
+	auto* instrument = static_cast<MelodicInstrument*>(output);
+	auto* soundStack = modelStack->addOtherTwoThingsButNoNoteRow(output->toModControllable(), &paramManager);
+	const int16_t expression[kNumExpressionDimensions]{};
+	for (int i = 0; i < events.count; ++i) {
+		const auto& event = events.notes[i];
+		instrument->sendNote(soundStack, event.on, event.note, event.on ? expression : nullptr, MIDI_CHANNEL_NONE,
+		                     event.velocity);
+	}
+}
+
+void InstrumentClip::stopGenerator(ModelStackWithTimelineCounter* modelStack) {
+	sendGeneratorEvents(modelStack, generatorRuntime_.stop());
+	generatorHistory_.stop(playbackHandler.lastSwungTickActioned);
+}
+
+void InstrumentClip::refreshGeneratorPattern(Song* song) {
+	const int root = (song->key.rootNote % 12 + 12) % 12;
+	generatorContext_ = {song->key.modeNotes.toBits(), static_cast<int16_t>(root + generatorOctave * 12)};
+	generatorRuntime_.queue(deluge::model::generator::tb3po::generate(generatorSettings, generatorContext_));
+	generatorPatternReady_ = true;
+}
+
+void InstrumentClip::setGeneratorEnabled(ModelStackWithTimelineCounter* modelStack, bool enabled) {
+	if (enabled == generatorEnabled || (enabled && !generatorAvailable())) {
+		return;
+	}
+	if (enabled && isActiveOnOutput()) {
+		// Finish sequenced piano-roll notes before changing sources. Their NoteRows remain untouched.
+		stopAllNotesPlaying(modelStack);
+	}
+	else {
+		stopGenerator(modelStack);
+	}
+	generatorEnabled = enabled;
+	refreshGeneratorPattern(modelStack->song);
+	// Disable hands ordinary playback back at the next existing swung tick, never while holding a generated note.
+	if (!enabled) {
+		// Rejoin the clip grid, including rows with their own length or direction, without moving the clip clock.
+		setNoteRowPositions(modelStack, lastProcessedPos, lastProcessedPos);
+	}
+	noteRowsNumTicksBehindClip = 0;
+	expectEvent();
+}
+
+void InstrumentClip::processGenerator(ModelStackWithTimelineCounter* modelStack) {
+	int32_t ticksToNext = 1;
+	if (!generatorAvailable() || !isActiveOnOutput()) {
+		stopGenerator(modelStack);
+	}
+	else {
+		const int root = (modelStack->song->key.rootNote % 12 + 12) % 12;
+		if (!generatorPatternReady_ || generatorContext_.scaleNotes != modelStack->song->key.modeNotes.toBits()
+		    || generatorContext_.tonicNote != root + generatorOctave * 12) {
+			refreshGeneratorPattern(modelStack->song);
+		}
+		const int64_t tick = static_cast<int64_t>(repeatCount) * loopLength + lastProcessedPos;
+		const auto events = generatorRuntime_.process(tick, modelStack->song->getSixteenthNoteLength());
+		sendGeneratorEvents(modelStack, events);
+		const int32_t barLength = modelStack->song->getSixteenthNoteLength() * 16;
+		generatorHistory_.record(playbackHandler.lastSwungTickActioned, barLength, events);
+		ticksToNext = events.ticksToNext;
+		// Visit transport bar boundaries even when clip steps have a different phase or a note is tied.
+		ticksToNext = std::min<int32_t>(ticksToNext, barLength - playbackHandler.lastSwungTickActioned % barLength);
+	}
+	ticksTilNextNoteRowEvent = ticksToNext;
+	playbackHandler.swungTicksTilNextEvent = std::min(playbackHandler.swungTicksTilNextEvent, ticksToNext);
+}
+
 void InstrumentClip::processCurrentPos(ModelStackWithTimelineCounter* modelStack, uint32_t ticksSinceLast) {
 
 	Clip::processCurrentPos(modelStack, ticksSinceLast);
 	if (modelStack->getTimelineCounter() != this) {
 		return; // Is this in case it's created a new Clip or something?
+	}
+	if (generatorEnabled && output->type == OutputType::SYNTH) {
+		processGenerator(modelStack);
+		noteRowsNumTicksBehindClip = 0;
+		return;
 	}
 
 	// We already incremented / decremented noteRowsNumTicksBehindClip and ticksTilNextNoteRowEvent, in the call to
@@ -1132,6 +1225,10 @@ ModelStackWithNoteRow* InstrumentClip::getOrCreateNoteRowForYNote(int32_t yNote,
 // I think you need to check (playbackHandler.isEitherClockActive() && song->isClipActive(thisClip)) before calling
 // this.
 void InstrumentClip::resumePlayback(ModelStackWithTimelineCounter* modelStack, bool mayMakeSound) {
+	if (generatorEnabled && output->type == OutputType::SYNTH) {
+		expectEvent();
+		return;
+	}
 	for (int32_t i = 0; i < noteRows.getNumElements(); i++) {
 		NoteRow* thisNoteRow = noteRows.getElement(i);
 		if (!thisNoteRow->muted) {
@@ -1195,6 +1292,8 @@ void InstrumentClip::expectNoFurtherTicks(Song* song, bool actuallySoundChange) 
 // Stops currently-playing notes by actually sending a note-off right now.
 // Check that we're allowed to make sound before you call this (nowhere does, is that bad?)
 void InstrumentClip::stopAllNotesPlaying(ModelStackWithTimelineCounter* modelStack, bool actuallySoundChange) {
+	// Generator voices are never transferred implicitly to another clip, even in a silent NoteRow handover.
+	stopGenerator(modelStack);
 	for (int32_t i = 0; i < noteRows.getNumElements(); i++) {
 		NoteRow* thisNoteRow = noteRows.getElement(i);
 		ModelStackWithNoteRow* modelStackWithNoteRow =
@@ -1697,6 +1796,9 @@ Error InstrumentClip::changeInstrument(ModelStackWithTimelineCounter* modelStack
                                        InstrumentRemoval instrumentRemovalInstruction,
                                        InstrumentClip* favourClipForCloningParamManager, bool keepNoteRowsWithMIDIInput,
                                        bool giveMidiAssignmentsToNewInstrument) {
+	if (newInstrument->type != OutputType::SYNTH) {
+		setGeneratorEnabled(modelStack, false);
+	}
 	// If switching to Kit
 	if (newInstrument->type == OutputType::KIT) {
 
@@ -3708,6 +3810,9 @@ bool InstrumentClip::isScrollWithinRange(int32_t scrollAmount, int32_t newYNote)
 }
 
 bool InstrumentClip::isEmpty(bool displayPopup) {
+	if (generatorEnabled) {
+		return false;
+	}
 	// does this clip have notes?
 	if (containsAnyNotes()) {
 		if (displayPopup) {
@@ -4726,6 +4831,10 @@ void InstrumentClip::incrementPos(ModelStackWithTimelineCounter* modelStack, int
 
 	ticksTilNextNoteRowEvent -= numTicks; // We're one tick closer to the next event...
 	noteRowsNumTicksBehindClip += numTicks;
+
+	if (generatorEnabled && output->type == OutputType::SYNTH) {
+		return; // Independent NoteRows are realigned when ordinary playback resumes.
+	}
 
 	if (ticksTilNextNoteRowEvent <= 0) {
 

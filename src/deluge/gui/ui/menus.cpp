@@ -80,6 +80,7 @@
 #include "gui/menu_item/gate/mode.h"
 #include "gui/menu_item/gate/off_time.h"
 #include "gui/menu_item/gate/selection.h"
+#include "gui/menu_item/generator/tb3po.h"
 #include "gui/menu_item/horizontal_menu.h"
 #include "gui/menu_item/horizontal_menu_container.h"
 #include "gui/menu_item/horizontal_menu_group.h"
@@ -1517,10 +1518,27 @@ PLACE_SDRAM_BSS Submenu soundEditorRootDrumActionsMenu{
     {&drumNameEditMenu, &sample0RecorderMenu, &sample1RecorderMenu},
 };
 
+// This prototype is registered only in the synth clip's root menu.
+PLACE_SDRAM_BSS generator::Enabled tb3poEnabledMenu{STRING_FOR_ENABLED};
+PLACE_SDRAM_BSS generator::Control tb3poSeedMenu{STRING_FOR_TB3PO_SEED, generator::Parameter::SEED};
+PLACE_SDRAM_BSS generator::NewPattern tb3poNewPatternMenu{STRING_FOR_TB3PO_NEW_PATTERN};
+PLACE_SDRAM_BSS generator::Freeze tb3poFreezeMenu{STRING_FOR_TB3PO_FREEZE};
+PLACE_SDRAM_BSS generator::Control tb3poDensityMenu{STRING_FOR_TB3PO_DENSITY, generator::Parameter::DENSITY};
+PLACE_SDRAM_BSS generator::Control tb3poLengthMenu{STRING_FOR_TB3PO_LENGTH, generator::Parameter::LENGTH};
+PLACE_SDRAM_BSS generator::Control tb3poRegisterMenu{STRING_FOR_TB3PO_REGISTER, generator::Parameter::OCTAVE};
+PLACE_SDRAM_BSS generator::Slides tb3poSlidesMenu{STRING_FOR_TB3PO_SLIDES};
+PLACE_SDRAM_BSS generator::TB3POSubmenu tb3poMenu{
+    STRING_FOR_TB3PO,
+    {&tb3poEnabledMenu, &tb3poSeedMenu, &tb3poNewPatternMenu, &tb3poFreezeMenu, &tb3poDensityMenu, &tb3poLengthMenu,
+     &tb3poRegisterMenu, &tb3poSlidesMenu},
+};
+PLACE_SDRAM_BSS Submenu generatorMenu{STRING_FOR_GENERATOR, {&tb3poMenu}};
+
 PLACE_SDRAM_BSS Submenu soundEditorRootMenu{
     STRING_FOR_SOUND,
     {
         &soundEditorRootActionsMenu,
+        &generatorMenu,
         &soundMasterMenu,
         &arpMenu,
         &randomizerMenu,

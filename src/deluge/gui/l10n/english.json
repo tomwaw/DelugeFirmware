@@ -992,6 +992,23 @@
     "STRING_FOR_FAVOURITES_EMPTY": "Empty",
     "STRING_FOR_DEFAULT_HORIZONTAL_MENU": "Horizontal Menu",
     "STRING_FOR_CHORD_KEYBOARD_MODE_ROW": "Chord Row Mode",
-    "STRING_FOR_CHORD_KEYBOARD_MODE_COLUMN": "Chord Column Mode"
+    "STRING_FOR_CHORD_KEYBOARD_MODE_COLUMN": "Chord Column Mode",
+    "STRING_FOR_GENERATOR": "Generator",
+    "STRING_FOR_TB3PO": "TB3PO",
+    "STRING_FOR_TB3PO_SEED": "Seed",
+    "STRING_FOR_TB3PO_NEW_PATTERN": "New pattern",
+    "STRING_FOR_TB3PO_DENSITY": "Density",
+    "STRING_FOR_TB3PO_LENGTH": "Length",
+    "STRING_FOR_TB3PO_REGISTER": "Register",
+    "STRING_FOR_TB3PO_SLIDES": "Slides",
+    "STRING_FOR_TB3PO_PENDING": "TB3PO pending",
+    "STRING_FOR_TB3PO_PAUSED": "TB3PO paused",
+    "STRING_FOR_TB3PO_ARP_OFF": "Turn arp off",
+    "STRING_FOR_TB3PO_FORWARD": "Use forward direction",
+    "STRING_FOR_TB3PO_NEXT_CYCLE": "Next cycle",
+    "STRING_FOR_TB3PO_FREEZE": "Freeze last bar",
+    "STRING_FOR_TB3PO_WAIT_BAR": "Play a full bar",
+    "STRING_FOR_TB3PO_SESSION_ONLY": "Use Session clip",
+    "STRING_FOR_TB3PO_FROZEN": "Frozen in clip"
   }
 }
