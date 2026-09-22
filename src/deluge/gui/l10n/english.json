@@ -1009,6 +1009,26 @@
     "STRING_FOR_TB3PO_FREEZE": "Freeze last bar",
     "STRING_FOR_TB3PO_WAIT_BAR": "Play a full bar",
     "STRING_FOR_TB3PO_SESSION_ONLY": "Use Session clip",
-    "STRING_FOR_TB3PO_FROZEN": "Frozen in clip"
+    "STRING_FOR_TB3PO_FROZEN": "Frozen in clip",
+    "STRING_FOR_GRIDS": "Grids",
+    "STRING_FOR_GRIDS_X": "Map X",
+    "STRING_FOR_GRIDS_Y": "Map Y",
+    "STRING_FOR_GRIDS_KICK": "Kick density",
+    "STRING_FOR_GRIDS_SNARE": "Snare density",
+    "STRING_FOR_GRIDS_HAT": "Hat density",
+    "STRING_FOR_GRIDS_CHAOS": "Chaos",
+    "STRING_FOR_GRIDS_SEED": "Seed",
+    "STRING_FOR_GRIDS_NEW_SEED": "New seed",
+    "STRING_FOR_GRIDS_PAUSED": "Grids paused",
+    "STRING_FOR_GRIDS_PENDING": "Grids: seed pending",
+    "STRING_FOR_GRIDS_UNSUPPORTED": "Use Forward, arp off, sound rows",
+    "STRING_FOR_GRIDS_DUPLICATE": "Destination already assigned",
+    "STRING_FOR_GRIDS_UNASSIGNED": "Unassigned",
+    "STRING_FOR_GRIDS_KICK_ROW": "Kick row",
+    "STRING_FOR_GRIDS_KICK_NOTE": "Kick note",
+    "STRING_FOR_GRIDS_SNARE_ROW": "Snare row",
+    "STRING_FOR_GRIDS_SNARE_NOTE": "Snare note",
+    "STRING_FOR_GRIDS_HAT_ROW": "Hat row",
+    "STRING_FOR_GRIDS_HAT_NOTE": "Hat note"
   }
 }

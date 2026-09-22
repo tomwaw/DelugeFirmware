@@ -80,6 +80,7 @@
 #include "gui/menu_item/gate/mode.h"
 #include "gui/menu_item/gate/off_time.h"
 #include "gui/menu_item/gate/selection.h"
+#include "gui/menu_item/generator/grids.h"
 #include "gui/menu_item/generator/tb3po.h"
 #include "gui/menu_item/horizontal_menu.h"
 #include "gui/menu_item/horizontal_menu_container.h"
@@ -1534,6 +1535,28 @@ PLACE_SDRAM_BSS generator::TB3POSubmenu tb3poMenu{
 };
 PLACE_SDRAM_BSS Submenu generatorMenu{STRING_FOR_GENERATOR, {&tb3poMenu}};
 
+PLACE_SDRAM_BSS generator::grids::Enabled gridsEnabledMenu{STRING_FOR_ENABLED};
+PLACE_SDRAM_BSS generator::grids::Control gridsMapXMenu{STRING_FOR_GRIDS_X, generator::grids::Parameter::X};
+PLACE_SDRAM_BSS generator::grids::Control gridsMapYMenu{STRING_FOR_GRIDS_Y, generator::grids::Parameter::Y};
+PLACE_SDRAM_BSS generator::grids::Control gridsKickMenu{STRING_FOR_GRIDS_KICK, generator::grids::Parameter::KICK};
+PLACE_SDRAM_BSS generator::grids::Control gridsSnareMenu{STRING_FOR_GRIDS_SNARE, generator::grids::Parameter::SNARE};
+PLACE_SDRAM_BSS generator::grids::Control gridsHatMenu{STRING_FOR_GRIDS_HAT, generator::grids::Parameter::HAT};
+PLACE_SDRAM_BSS generator::grids::Control gridsChaosMenu{STRING_FOR_GRIDS_CHAOS, generator::grids::Parameter::CHAOS};
+PLACE_SDRAM_BSS generator::grids::Control gridsSeedMenu{STRING_FOR_GRIDS_SEED, generator::grids::Parameter::SEED};
+PLACE_SDRAM_BSS generator::grids::Destination gridsKickRowMenu{STRING_FOR_GRIDS_KICK_ROW, 0, true};
+PLACE_SDRAM_BSS generator::grids::Destination gridsKickNoteMenu{STRING_FOR_GRIDS_KICK_NOTE, 0, false};
+PLACE_SDRAM_BSS generator::grids::Destination gridsSnareRowMenu{STRING_FOR_GRIDS_SNARE_ROW, 1, true};
+PLACE_SDRAM_BSS generator::grids::Destination gridsSnareNoteMenu{STRING_FOR_GRIDS_SNARE_NOTE, 1, false};
+PLACE_SDRAM_BSS generator::grids::Destination gridsHatRowMenu{STRING_FOR_GRIDS_HAT_ROW, 2, true};
+PLACE_SDRAM_BSS generator::grids::Destination gridsHatNoteMenu{STRING_FOR_GRIDS_HAT_NOTE, 2, false};
+PLACE_SDRAM_BSS generator::grids::NewSeed gridsNewSeedMenu{STRING_FOR_GRIDS_NEW_SEED};
+PLACE_SDRAM_BSS generator::grids::Menu gridsMenu{
+    STRING_FOR_GRIDS,
+    {&gridsEnabledMenu, &gridsMapXMenu, &gridsMapYMenu, &gridsKickMenu, &gridsSnareMenu, &gridsHatMenu, &gridsChaosMenu,
+     &gridsSeedMenu, &gridsNewSeedMenu, &gridsKickRowMenu, &gridsSnareRowMenu, &gridsHatRowMenu, &gridsKickNoteMenu,
+     &gridsSnareNoteMenu, &gridsHatNoteMenu}};
+PLACE_SDRAM_BSS generator::grids::Menu drumGeneratorMenu{STRING_FOR_GENERATOR, {&gridsMenu}};
+
 PLACE_SDRAM_BSS Submenu soundEditorRootMenu{
     STRING_FOR_SOUND,
     {
@@ -1572,6 +1595,7 @@ PLACE_SDRAM_BSS Submenu soundEditorRootMenuDrum{
     STRING_FOR_SOUND,
     {
         &soundEditorRootDrumActionsMenu,
+        &drumGeneratorMenu,
         &soundMasterMenu,
         &arpMenu,
         &randomizerMenu,
@@ -1717,6 +1741,7 @@ PLACE_SDRAM_BSS menu_item::Submenu soundEditorRootMenuMIDIOrCV{
     STRING_FOR_MIDI_INST_MENU_TITLE,
     {
         &soundEditorRootActionsMenuMIDIOrCV,
+        &drumGeneratorMenu,
         &midiDeviceDefinitionMenu,
         &midiProgramMenu,
         &arpMenuMIDIOrCV,
@@ -1734,6 +1759,7 @@ PLACE_SDRAM_BSS menu_item::Submenu soundEditorRootMenuMidiDrum{
     STRING_FOR_MIDI,
     {
         &soundEditorRootDrumActionsMenu,
+        &drumGeneratorMenu,
         &arpMenuMIDIOrCV,
         &randomizerMenu,
     },
@@ -1742,6 +1768,7 @@ PLACE_SDRAM_BSS menu_item::Submenu soundEditorRootMenuGateDrum{
     STRING_FOR_GATE,
     {
         &soundEditorRootDrumActionsMenu,
+        &drumGeneratorMenu,
         &arpMenuMIDIOrCV,
         &randomizerMenu,
     },
@@ -1903,6 +1930,7 @@ PLACE_SDRAM_BSS menu_item::Submenu soundEditorRootMenuKitGlobalFX{
     STRING_FOR_KIT_GLOBAL_FX,
     {
         &kitGlobalFXActionsMenu,
+        &drumGeneratorMenu,
         &kitClipMasterMenu,
         &kitArpMenu,
         &audioCompMenu,

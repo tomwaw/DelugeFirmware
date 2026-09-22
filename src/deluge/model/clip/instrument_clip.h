@@ -20,6 +20,7 @@
 #include "definitions_cxx.hpp"
 #include "gui/ui/keyboard/state_data.h"
 #include "gui/views/instrument_clip_view.h"
+#include "model/generator/grids_runtime.h"
 #include "model/generator/tb3po_history.h"
 #include "model/note/note_row_vector.h"
 #include "modulation/arpeggiator.h"
@@ -103,6 +104,21 @@ public:
 
 	ArpeggiatorSettings arpSettings;
 
+	// TB3PO is synth-only; Grids is kit/MIDI-only, so one source can own a clip at a time.
+	bool gridsEnabled = false;
+	deluge::model::generator::grids::Settings gridsSettings{};
+	std::array<uint8_t, 3> gridsMidiNotes{36, 38, 42};
+	bool gridsAvailable();
+	bool gridsPending() const { return gridsRuntime_.pending(); }
+	void initializeGridsMapping();
+	int32_t gridsRowIndex(uint8_t part);
+	bool setGridsDestination(ModelStackWithTimelineCounter* modelStack, uint8_t part, int32_t value);
+	void forgetGridsDrum(ModelStackWithTimelineCounter* modelStack, Drum* drum);
+	void setGridsEnabled(ModelStackWithTimelineCounter* modelStack, bool enabled);
+	void refreshGrids() {
+		gridsRuntime_.queue(gridsSettings);
+		expectEvent();
+	}
 	bool generatorEnabled = false;
 	deluge::model::generator::tb3po::Settings generatorSettings{0x303, 4, 16, true};
 	int32_t generatorOctave = 3;
@@ -255,6 +271,14 @@ protected:
 	void pingpongOccurred(ModelStackWithTimelineCounter* modelStack) override;
 
 private:
+	deluge::model::generator::grids::Runtime gridsRuntime_;
+	std::array<Drum*, 3> gridsDrums_{};
+	std::array<bool, 3> gridsSounding_{};
+	bool gridsMappingInitialized_ = false;
+	void sendGridsEvents(ModelStackWithTimelineCounter* modelStack,
+	                     const deluge::model::generator::grids::Events& events);
+	void stopGrids(ModelStackWithTimelineCounter* modelStack);
+	void processGrids(ModelStackWithTimelineCounter* modelStack);
 	deluge::model::generator::tb3po::Runtime generatorRuntime_;
 	deluge::model::generator::tb3po::History generatorHistory_;
 	deluge::model::generator::tb3po::MusicalContext generatorContext_;

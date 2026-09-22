@@ -3724,6 +3724,12 @@ void NoteRow::setDrum(Drum* newDrum, Kit* kit, ModelStackWithNoteRow* modelStack
                       InstrumentClip* favourClipForCloningParamManager, ParamManager* newParamManager,
                       bool backupOldParamManager) {
 
+	if (drum && drum != newDrum) {
+		char memory[MODEL_STACK_MAX_SIZE];
+		auto* clip = static_cast<InstrumentClip*>(modelStack->getTimelineCounter());
+		clip->forgetGridsDrum(setupModelStackWithTimelineCounter(memory, modelStack->song, clip), drum);
+	}
+
 	if (backupOldParamManager && paramManager.containsAnyMainParamCollections()) {
 		modelStack->song->backUpParamManager(
 		    (SoundDrum*)drum, (Clip*)modelStack->getTimelineCounter(), &paramManager,

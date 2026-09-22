@@ -153,6 +153,12 @@ void InstrumentClip::copyBasicsFrom(Clip const* otherClip) {
 	generatorSettings = otherInstrumentClip->generatorSettings;
 	generatorOctave = otherInstrumentClip->generatorOctave;
 	generatorPatternReady_ = false;
+	gridsEnabled = otherInstrumentClip->gridsEnabled;
+	gridsSettings = otherInstrumentClip->gridsSettings;
+	gridsMidiNotes = otherInstrumentClip->gridsMidiNotes;
+	gridsDrums_ = otherInstrumentClip->gridsDrums_;
+	gridsMappingInitialized_ = otherInstrumentClip->gridsMappingInitialized_;
+	refreshGrids();
 }
 
 // Will replace the Clip in the modelStack, if success.
@@ -724,6 +730,7 @@ void InstrumentClip::sendGeneratorEvents(ModelStackWithTimelineCounter* modelSta
 }
 
 void InstrumentClip::stopGenerator(ModelStackWithTimelineCounter* modelStack) {
+	stopGrids(modelStack);
 	sendGeneratorEvents(modelStack, generatorRuntime_.stop());
 	generatorHistory_.stop(playbackHandler.lastSwungTickActioned);
 }
@@ -786,6 +793,11 @@ void InstrumentClip::processCurrentPos(ModelStackWithTimelineCounter* modelStack
 	Clip::processCurrentPos(modelStack, ticksSinceLast);
 	if (modelStack->getTimelineCounter() != this) {
 		return; // Is this in case it's created a new Clip or something?
+	}
+	if (gridsEnabled) {
+		processGrids(modelStack);
+		noteRowsNumTicksBehindClip = 0;
+		return;
 	}
 	if (generatorEnabled && output->type == OutputType::SYNTH) {
 		processGenerator(modelStack);
@@ -1225,7 +1237,7 @@ ModelStackWithNoteRow* InstrumentClip::getOrCreateNoteRowForYNote(int32_t yNote,
 // I think you need to check (playbackHandler.isEitherClockActive() && song->isClipActive(thisClip)) before calling
 // this.
 void InstrumentClip::resumePlayback(ModelStackWithTimelineCounter* modelStack, bool mayMakeSound) {
-	if (generatorEnabled && output->type == OutputType::SYNTH) {
+	if (gridsEnabled || (generatorEnabled && output->type == OutputType::SYNTH)) {
 		expectEvent();
 		return;
 	}
@@ -1796,6 +1808,10 @@ Error InstrumentClip::changeInstrument(ModelStackWithTimelineCounter* modelStack
                                        InstrumentRemoval instrumentRemovalInstruction,
                                        InstrumentClip* favourClipForCloningParamManager, bool keepNoteRowsWithMIDIInput,
                                        bool giveMidiAssignmentsToNewInstrument) {
+	// Release through the old output before replacing it. Kit mappings belong to that output.
+	setGridsEnabled(modelStack, false);
+	gridsDrums_.fill(nullptr);
+	gridsMappingInitialized_ = false;
 	if (newInstrument->type != OutputType::SYNTH) {
 		setGeneratorEnabled(modelStack, false);
 	}
@@ -3810,7 +3826,7 @@ bool InstrumentClip::isScrollWithinRange(int32_t scrollAmount, int32_t newYNote)
 }
 
 bool InstrumentClip::isEmpty(bool displayPopup) {
-	if (generatorEnabled) {
+	if (generatorEnabled || gridsEnabled) {
 		return false;
 	}
 	// does this clip have notes?
@@ -4832,7 +4848,7 @@ void InstrumentClip::incrementPos(ModelStackWithTimelineCounter* modelStack, int
 	ticksTilNextNoteRowEvent -= numTicks; // We're one tick closer to the next event...
 	noteRowsNumTicksBehindClip += numTicks;
 
-	if (generatorEnabled && output->type == OutputType::SYNTH) {
+	if (gridsEnabled || (generatorEnabled && output->type == OutputType::SYNTH)) {
 		return; // Independent NoteRows are realigned when ordinary playback resumes.
 	}
 

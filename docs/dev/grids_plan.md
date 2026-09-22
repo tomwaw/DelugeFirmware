@@ -1,10 +1,12 @@
 # Grids drum generator: menu-first Deluge plan
 
-Status: implementation plan; Grids is not implemented yet. Kit and MIDI clips are both initial targets.
-Updated: 2026-09-22.
+Status: first kit/MIDI playback prototype implemented and built; kit audio and USB MIDI emulator checks passed.
+Grids Freeze, recipe persistence, and broader lifecycle/hardware validation remain open.
+Updated: 2026-09-23.
 
 Branch: `feature/grids-generator`, starting from TB3PO commit `a10dfcf7` on `feature/tb3po-generator`.
 Keep the complete TB3PO implementation, tests, and documentation available; Grids is an additional generator.
+See [source, controls, and verification notes](grids_core.md) for the current build.
 
 ## Goal
 
@@ -173,22 +175,22 @@ Recipe persistence and frozen ordinary notes are separate deliverables.
 
 ### 1. Adapt and test the musical core
 
-- [ ] Pin source, retain notices, extract drum-map data and integer interpolation helpers.
-- [ ] Implement per-instance state and deterministic Chaos; document deliberate source differences.
-- [ ] Test reference patterns at Chaos zero, map edges/intermediate positions, density thresholds, accents, wrap,
+- [x] Pin source, retain notices, extract drum-map data and integer interpolation helpers.
+- [x] Implement per-instance state and deterministic Chaos; document deliberate source differences.
+- [x] Test reference patterns at Chaos zero, map edges/intermediate positions, density thresholds, accents, wrap,
   reproducibility, and interleaved instances. Check that raising density only adds hits for fixed map/perturbation.
 
 Exit: meaningful three-part patterns with no firmware-global dependencies and a measured memory footprint.
 
 ### 2. Menu, kit, and MIDI playback
 
-- [ ] Add clip-owned settings, supported-output checks, and the minimal menu.
-- [ ] Add kit row selectors with first-three-row defaults, stable assignments, and visible unassigned states.
+- [x] Add clip-owned settings, supported-output checks, and the minimal menu.
+- [x] Add kit row selectors with first-three-row defaults, stable assignments, and visible unassigned states.
 - [ ] Route kit events through normal SoundDrum handling; verify row mute, choke, and unsupported arpeggiator cases.
-- [ ] Integrate thirty-second-note timing, simultaneous events, gate deadlines, live edits, and lifecycle cleanup.
+- [x] Integrate thirty-second-note timing, simultaneous events, gate deadlines, live edits, and lifecycle cleanup.
 - [ ] Verify the default mapping on a kit with kick, snare, and hat in its first three rows; scroll, reorder, delete,
   reassign, and clone rows/clips without wrong sounds or hanging notes. Test kits with fewer than three rows.
-- [ ] Establish emulator MIDI/event capture; use hardware MIDI capture if the emulator cannot expose output.
+- [x] Establish emulator MIDI/event capture; use hardware MIDI capture if the emulator cannot expose output.
 - [ ] Configure Battalion's actual notes/channel and listen while changing map, densities, and Chaos.
 - [ ] Verify no doubled hits or hanging notes on repeated pitches, stop/mute/solo/disable, clip switches, seeks, and
   Session/Arrangement transitions. Run TB3PO alongside it and confirm no cross-instance interference.

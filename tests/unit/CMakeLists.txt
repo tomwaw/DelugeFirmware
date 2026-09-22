@@ -61,6 +61,8 @@ file(GLOB_RECURSE deluge_SOURCES
         ../../src/deluge/gui/ui/keyboard/chords.cpp
         # For clock output scheduler tests
         ../../src/deluge/playback/clock_output_scheduler.cpp
+        ../../src/deluge/model/generator/grids.cpp
+        ../../src/deluge/model/generator/grids_runtime.cpp
         # For the deterministic TB3PO pattern core
         ../../src/deluge/model/generator/tb3po.cpp
         ../../src/deluge/model/generator/tb3po_runtime.cpp
@@ -82,6 +84,7 @@ add_executable(UnitTests
         chord_tests.cpp
         time_tests.cpp
         clock_output_scheduler_tests.cpp
+        grids_tests.cpp
         tb3po_tests.cpp
         tb3po_runtime_tests.cpp
         tb3po_history_tests.cpp
