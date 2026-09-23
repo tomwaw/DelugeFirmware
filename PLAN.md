@@ -12,7 +12,8 @@ The next generator is developed on `feature/grids-generator`, based on TB3PO com
 Its [Grids implementation plan](docs/dev/grids_plan.md) targets kit and MIDI clips, with the first three kit rows
 assigned to kick, snare, and hat by default. This branch retains the full TB3PO implementation alongside Grids.
 The first Grids kit/MIDI playback prototype is now built and emulator-tested; see [its notes](docs/dev/grids_core.md).
-Grids Freeze and recipe persistence remain subsequent milestones.
+Grids now also supports in-place kit Freeze with undo/redo. MIDI Freeze and recipe persistence remain subsequent
+milestones.
 
 ## Goal and direction
 

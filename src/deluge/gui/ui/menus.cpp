@@ -1536,6 +1536,7 @@ PLACE_SDRAM_BSS generator::TB3POSubmenu tb3poMenu{
 PLACE_SDRAM_BSS Submenu generatorMenu{STRING_FOR_GENERATOR, {&tb3poMenu}};
 
 PLACE_SDRAM_BSS generator::grids::Enabled gridsEnabledMenu{STRING_FOR_ENABLED};
+PLACE_SDRAM_BSS generator::grids::Freeze gridsFreezeMenu{STRING_FOR_TB3PO_FREEZE};
 PLACE_SDRAM_BSS generator::grids::Control gridsMapXMenu{STRING_FOR_GRIDS_X, generator::grids::Parameter::X};
 PLACE_SDRAM_BSS generator::grids::Control gridsMapYMenu{STRING_FOR_GRIDS_Y, generator::grids::Parameter::Y};
 PLACE_SDRAM_BSS generator::grids::Control gridsKickMenu{STRING_FOR_GRIDS_KICK, generator::grids::Parameter::KICK};
@@ -1552,9 +1553,9 @@ PLACE_SDRAM_BSS generator::grids::Destination gridsHatNoteMenu{STRING_FOR_GRIDS_
 PLACE_SDRAM_BSS generator::grids::NewSeed gridsNewSeedMenu{STRING_FOR_GRIDS_NEW_SEED};
 PLACE_SDRAM_BSS generator::grids::Menu gridsMenu{
     STRING_FOR_GRIDS,
-    {&gridsEnabledMenu, &gridsMapXMenu, &gridsMapYMenu, &gridsKickMenu, &gridsSnareMenu, &gridsHatMenu, &gridsChaosMenu,
-     &gridsSeedMenu, &gridsNewSeedMenu, &gridsKickRowMenu, &gridsSnareRowMenu, &gridsHatRowMenu, &gridsKickNoteMenu,
-     &gridsSnareNoteMenu, &gridsHatNoteMenu}};
+    {&gridsEnabledMenu, &gridsFreezeMenu, &gridsMapXMenu, &gridsMapYMenu, &gridsKickMenu, &gridsSnareMenu,
+     &gridsHatMenu, &gridsChaosMenu, &gridsSeedMenu, &gridsNewSeedMenu, &gridsKickRowMenu, &gridsSnareRowMenu,
+     &gridsHatRowMenu, &gridsKickNoteMenu, &gridsSnareNoteMenu, &gridsHatNoteMenu}};
 PLACE_SDRAM_BSS generator::grids::Menu drumGeneratorMenu{STRING_FOR_GENERATOR, {&gridsMenu}};
 
 PLACE_SDRAM_BSS Submenu soundEditorRootMenu{

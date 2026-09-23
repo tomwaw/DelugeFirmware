@@ -97,7 +97,7 @@ Action* ActionLogger::getNewAction(ActionType newActionType, ActionAddition addT
 	if ((getCurrentUI() != getRootUI())
 	    && (!(getCurrentUI() == &soundEditor
 	          && (soundEditor.inNoteEditor() || soundEditor.inNoteRowEditor()
-	              || newActionType == ActionType::TB3PO_FREEZE)))
+	              || newActionType == ActionType::TB3PO_FREEZE || newActionType == ActionType::GRIDS_FREEZE)))
 	    && (getCurrentUI() != &loadPatternUI)) {
 		return nullptr;
 	}

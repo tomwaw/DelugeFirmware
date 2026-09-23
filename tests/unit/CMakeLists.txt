@@ -63,6 +63,7 @@ file(GLOB_RECURSE deluge_SOURCES
         ../../src/deluge/playback/clock_output_scheduler.cpp
         ../../src/deluge/model/generator/grids.cpp
         ../../src/deluge/model/generator/grids_runtime.cpp
+        ../../src/deluge/model/generator/grids_history.cpp
         # For the deterministic TB3PO pattern core
         ../../src/deluge/model/generator/tb3po.cpp
         ../../src/deluge/model/generator/tb3po_runtime.cpp
@@ -85,6 +86,7 @@ add_executable(UnitTests
         time_tests.cpp
         clock_output_scheduler_tests.cpp
         grids_tests.cpp
+        grids_history_tests.cpp
         tb3po_tests.cpp
         tb3po_runtime_tests.cpp
         tb3po_history_tests.cpp

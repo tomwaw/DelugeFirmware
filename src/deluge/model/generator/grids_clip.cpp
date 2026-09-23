@@ -40,11 +40,13 @@ bool InstrumentClip::gridsAvailable() {
 	}
 	return true;
 }
-void InstrumentClip::sendGridsEvents(ModelStackWithTimelineCounter* modelStack,
-                                     const deluge::model::generator::grids::Events& events) {
+deluge::model::generator::grids::Events
+InstrumentClip::sendGridsEvents(ModelStackWithTimelineCounter* modelStack,
+                                const deluge::model::generator::grids::Events& events) {
+	deluge::model::generator::grids::Events emitted;
 	if (!output || !isActiveOnOutput()) {
 		gridsSounding_.fill(false);
-		return;
+		return emitted;
 	}
 	for (uint8_t i = 0; i < events.count; ++i) {
 		const auto& event = events.notes[i];
@@ -84,16 +86,20 @@ void InstrumentClip::sendGridsEvents(ModelStackWithTimelineCounter* modelStack,
 		else
 			continue;
 		gridsSounding_[part] = event.on;
+		emitted.notes[emitted.count++] = event;
 	}
+	return emitted;
 }
 void InstrumentClip::stopGrids(ModelStackWithTimelineCounter* modelStack) {
 	sendGridsEvents(modelStack, gridsRuntime_.stop());
+	gridsHistory_.stop(playbackHandler.lastSwungTickActioned);
 }
 void InstrumentClip::forgetGridsDrum(ModelStackWithTimelineCounter* modelStack, Drum* drum) {
 	for (auto& assigned : gridsDrums_) {
 		if (assigned == drum) {
 			stopGrids(modelStack);
 			assigned = nullptr;
+			gridsHistory_.reset();
 		}
 	}
 }
@@ -122,6 +128,7 @@ bool InstrumentClip::setGridsDestination(ModelStackWithTimelineCounter* modelSta
 	}
 	else
 		return false;
+	gridsHistory_.reset();
 	expectEvent();
 	return true;
 }
@@ -133,6 +140,8 @@ void InstrumentClip::setGridsEnabled(ModelStackWithTimelineCounter* modelStack, 
 		stopAllNotesPlaying(modelStack);
 	else
 		stopGrids(modelStack);
+	if (enabled)
+		gridsHistory_.reset();
 	gridsEnabled = enabled;
 	refreshGrids();
 	if (!enabled)
@@ -148,8 +157,16 @@ void InstrumentClip::processGrids(ModelStackWithTimelineCounter* modelStack) {
 		const int64_t tick = static_cast<int64_t>(repeatCount) * loopLength + lastProcessedPos;
 		const auto events =
 		    gridsRuntime_.process(tick, std::max<int32_t>(1, modelStack->song->getSixteenthNoteLength() / 2));
-		sendGridsEvents(modelStack, events);
-		ticksToNext = events.ticksToNext;
+		const auto emitted = sendGridsEvents(modelStack, events);
+		const int32_t barLength = modelStack->song->getSixteenthNoteLength() * 16;
+		if (output->type == OutputType::KIT) {
+			deluge::model::generator::grids::Destinations destinations{};
+			for (uint8_t part = 0; part < 3; ++part)
+				destinations[part] = reinterpret_cast<uintptr_t>(gridsDrums_[part]);
+			gridsHistory_.record(playbackHandler.lastSwungTickActioned, barLength, destinations, emitted);
+		}
+		ticksToNext =
+		    std::min<int32_t>(events.ticksToNext, barLength - playbackHandler.lastSwungTickActioned % barLength);
 	}
 	ticksTilNextNoteRowEvent = ticksToNext;
 	playbackHandler.swungTicksTilNextEvent = std::min(playbackHandler.swungTicksTilNextEvent, ticksToNext);

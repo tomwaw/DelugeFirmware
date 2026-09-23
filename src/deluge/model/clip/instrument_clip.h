@@ -20,7 +20,7 @@
 #include "definitions_cxx.hpp"
 #include "gui/ui/keyboard/state_data.h"
 #include "gui/views/instrument_clip_view.h"
-#include "model/generator/grids_runtime.h"
+#include "model/generator/grids_history.h"
 #include "model/generator/tb3po_history.h"
 #include "model/note/note_row_vector.h"
 #include "modulation/arpeggiator.h"
@@ -110,6 +110,9 @@ public:
 	std::array<uint8_t, 3> gridsMidiNotes{36, 38, 42};
 	bool gridsAvailable();
 	bool gridsPending() const { return gridsRuntime_.pending(); }
+	bool gridsFreezeReady() const { return gridsHistory_.ready(); }
+	bool gridsCaptureOverflowed() const { return gridsHistory_.overflowed(); }
+	Error freezeGridsBar(Song* song);
 	void initializeGridsMapping();
 	int32_t gridsRowIndex(uint8_t part);
 	bool setGridsDestination(ModelStackWithTimelineCounter* modelStack, uint8_t part, int32_t value);
@@ -271,12 +274,14 @@ protected:
 	void pingpongOccurred(ModelStackWithTimelineCounter* modelStack) override;
 
 private:
+	friend class ConsequenceGridsFreeze;
+	deluge::model::generator::grids::History gridsHistory_;
 	deluge::model::generator::grids::Runtime gridsRuntime_;
 	std::array<Drum*, 3> gridsDrums_{};
 	std::array<bool, 3> gridsSounding_{};
 	bool gridsMappingInitialized_ = false;
-	void sendGridsEvents(ModelStackWithTimelineCounter* modelStack,
-	                     const deluge::model::generator::grids::Events& events);
+	deluge::model::generator::grids::Events sendGridsEvents(ModelStackWithTimelineCounter* modelStack,
+	                                                        const deluge::model::generator::grids::Events& events);
 	void stopGrids(ModelStackWithTimelineCounter* modelStack);
 	void processGrids(ModelStackWithTimelineCounter* modelStack);
 	deluge::model::generator::tb3po::Runtime generatorRuntime_;

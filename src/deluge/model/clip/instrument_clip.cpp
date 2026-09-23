@@ -390,6 +390,7 @@ void InstrumentClip::setPos(ModelStackWithTimelineCounter* modelStack, int32_t n
                             bool useActualPosForParamManagers) {
 	stopGenerator(modelStack);
 	generatorHistory_.reset();
+	gridsHistory_.reset();
 	Clip::setPos(modelStack, newPos, useActualPosForParamManagers); // This will also call our own virtual expectEvent()
 
 	noteRowsNumTicksBehindClip = 0;
@@ -1811,6 +1812,7 @@ Error InstrumentClip::changeInstrument(ModelStackWithTimelineCounter* modelStack
 	// Release through the old output before replacing it. Kit mappings belong to that output.
 	setGridsEnabled(modelStack, false);
 	gridsDrums_.fill(nullptr);
+	gridsHistory_.reset();
 	gridsMappingInitialized_ = false;
 	if (newInstrument->type != OutputType::SYNTH) {
 		setGeneratorEnabled(modelStack, false);

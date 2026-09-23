@@ -3,11 +3,13 @@
 #include "gui/menu_item/submenu.h"
 #include "gui/menu_item/toggle.h"
 #include "gui/ui_timer_manager.h"
+#include "gui/views/instrument_clip_view.h"
 #include "hid/display/oled.h"
 #include "model/clip/instrument_clip.h"
 #include "model/drum/drum.h"
 #include "model/note/note_row.h"
 #include "model/song/song.h"
+#include "playback/playback_handler.h"
 #include "util/functions.h"
 
 namespace deluge::gui::menu_item::generator::grids {
@@ -198,4 +200,34 @@ public:
 		return NO_NAVIGATION;
 	}
 };
+class Freeze final : public MenuItem {
+public:
+	using MenuItem::MenuItem;
+	bool isRelevant(ModControllableAudio*, int32_t) const override { return clip().output->type == OutputType::KIT; }
+	bool shouldEnterSubmenu() override { return false; }
+	MenuItem* selectButtonPress() override {
+		if (currentSong->sessionClips.getIndexForClip(&clip()) < 0)
+			display->displayPopup(l10n::get(l10n::String::STRING_FOR_TB3PO_SESSION_ONLY));
+		else if (playbackHandler.recording != RecordingMode::OFF)
+			display->displayPopup(l10n::get(l10n::String::STRING_FOR_RECORDING_IN_PROGRESS));
+		else if (!clip().gridsFreezeReady())
+			display->displayPopup(l10n::get(clip().gridsCaptureOverflowed()
+			                                    ? l10n::String::STRING_FOR_GRIDS_CAPTURE_FULL
+			                                    : l10n::String::STRING_FOR_TB3PO_WAIT_BAR));
+		else if (!clip().gridsAvailable())
+			display->displayPopup(l10n::get(l10n::String::STRING_FOR_GRIDS_UNSUPPORTED));
+		else {
+			const auto error = clip().freezeGridsBar(currentSong);
+			if (error != Error::NONE)
+				display->displayError(error);
+			else {
+				instrumentClipView.recalculateColours();
+				uiNeedsRendering(getRootUI());
+				display->displayPopup(l10n::get(l10n::String::STRING_FOR_TB3PO_FROZEN));
+			}
+		}
+		return NO_NAVIGATION;
+	}
+};
+
 } // namespace deluge::gui::menu_item::generator::grids

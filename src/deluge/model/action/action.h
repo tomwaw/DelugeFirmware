@@ -73,9 +73,10 @@ enum class ActionType {
 	NOTEROW_LENGTH_EDIT,
 	NOTEROW_HORIZONTAL_SHIFT,
 	TB3PO_FREEZE,
+	GRIDS_FREEZE,
 };
 
-extern EnumStringMap<ActionType, 29> actionTypeMap;
+extern EnumStringMap<ActionType, 30> actionTypeMap;
 
 class Action {
 public:

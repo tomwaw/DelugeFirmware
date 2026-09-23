@@ -594,6 +594,7 @@ PLACE_SDRAM_DATA Language seven_segment{
         {STRING_FOR_GRIDS_SNARE_NOTE, "SNNT"},
         {STRING_FOR_GRIDS_HAT_ROW, "HARW"},
         {STRING_FOR_GRIDS_HAT_NOTE, "HANT"},
+        {STRING_FOR_GRIDS_CAPTURE_FULL, "FULL"},
     },
     &built_in::english,
 };

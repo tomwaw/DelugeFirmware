@@ -1,7 +1,8 @@
 # Grids drum generator: menu-first Deluge plan
 
 Status: first kit/MIDI playback prototype implemented and built; kit audio and USB MIDI emulator checks passed.
-Grids Freeze, recipe persistence, and broader lifecycle/hardware validation remain open.
+Kit Freeze with undo/redo is implemented. MIDI Freeze, recipe persistence, and broader lifecycle/hardware validation
+remain open.
 Updated: 2026-09-23.
 
 Branch: `feature/grids-generator`, starting from TB3PO commit `a10dfcf7` on `feature/tb3po-generator`.
@@ -203,8 +204,9 @@ edits, and keeps playing with the menu closed. TB3PO still runs independently on
 - [ ] Save/load validated settings, routing, seed, and algorithm version; old songs default to generator off.
 - [ ] Copy the recipe on clip clone with independent runtime state; define recipe reset on conversion to unsupported
   outputs. Audit every new field's copy, load, and cleanup path.
-- [ ] Implement emitted-event history and in-place Freeze/undo/redo for MIDI and kit clips, with dense, silent, edited,
-  and boundary-crossing bars. Verify kit sounds, routing, automation, clip identity, and immediate pad refresh.
+- [x] Implement emitted-event history and in-place Freeze/undo/redo for kit clips, with dense, silent, edited,
+  and boundary-crossing capture tests. Preserve kit sounds, routing, automation, and clip identity; refresh pads.
+- [ ] Extend in-place Freeze/undo/redo to MIDI clips.
 
 Exit: reload a recipe and save/edit a frozen kit or MIDI performance in its original clip; undo restores prior notes
 and generator playback.

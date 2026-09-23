@@ -1043,6 +1043,7 @@ PLACE_SDRAM_DATA Language english{
         {STRING_FOR_GRIDS_SNARE_NOTE, "Snare note"},
         {STRING_FOR_GRIDS_HAT_ROW, "Hat row"},
         {STRING_FOR_GRIDS_HAT_NOTE, "Hat note"},
+        {STRING_FOR_GRIDS_CAPTURE_FULL, "Capture overflow; play another bar"},
     },
 };
 } // namespace deluge::l10n::built_in

@@ -54,7 +54,7 @@ Action::Action(ActionType newActionType) {
 	offset = 0;
 }
 
-EnumStringMap<ActionType, 29> actionTypeMap{
+EnumStringMap<ActionType, 30> actionTypeMap{
     {{{ActionType::MISC, "misc"},
       {ActionType::NOTE_EDIT, "note_edit"},
       {ActionType::NOTE_TAIL_EXTEND, "note_tail_extend"},
@@ -83,7 +83,8 @@ EnumStringMap<ActionType, 29> actionTypeMap{
       {ActionType::NOTEROW_ROTATE, "noterow_rotate"},
       {ActionType::NOTEROW_LENGTH_EDIT, "noterow_length_edit"},
       {ActionType::NOTEROW_HORIZONTAL_SHIFT, "noterow_horizontal_shift"},
-      {ActionType::TB3PO_FREEZE, "tb3po_freeze"}}}};
+      {ActionType::TB3PO_FREEZE, "tb3po_freeze"},
+      {ActionType::GRIDS_FREEZE, "grids_freeze"}}}};
 
 // Call this before the destructor!
 void Action::prepareForDestruction(int32_t whichQueueActionIn, Song* song) {
